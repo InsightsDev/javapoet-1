@@ -391,6 +391,11 @@ public final class TypeSpec {
       return this;
     }
 
+    public Builder addJavadoc(CodeBlock block) {
+      javadoc.add(block);
+      return this;
+    }
+
     public Builder addAnnotations(Iterable<AnnotationSpec> annotationSpecs) {
       checkArgument(annotationSpecs != null, "annotationSpecs == null");
       for (AnnotationSpec annotationSpec : annotationSpecs) {
@@ -434,6 +439,7 @@ public final class TypeSpec {
     }
 
     public Builder superclass(TypeName superclass) {
+      checkState(this.kind == Kind.CLASS, "only classes have super classes, not " + this.kind);
       checkState(this.superclass == ClassName.OBJECT,
           "superclass already set to " + this.superclass);
       checkArgument(!superclass.isPrimitive(), "superclass may not be a primitive");
@@ -454,6 +460,7 @@ public final class TypeSpec {
     }
 
     public Builder addSuperinterface(TypeName superinterface) {
+      checkArgument(superinterface != null, "superinterface == null");
       this.superinterfaces.add(superinterface);
       return this;
     }
