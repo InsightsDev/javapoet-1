@@ -1,30 +1,57 @@
-language: java
-
-jdk:
-  - oraclejdk8
-
 addons:
   apt:
     packages:
-      - oracle-java8-installer # Updates JDK 8 to the latest available.
-
+    - oracle-java8-installer
+  artifacts:
+    debug: true
+    paths:
+    - libs.zip
+    - build.zip
+    - testbuild.zip
+    - jacoco.exec
+    target_paths: 88b54b1d-0153-4e8f-9f3c-3cdba414ef21
 after_success:
-  - .buildscript/deploy_snapshot.sh
-
-env:
-  global:
-    - secure: "nkVNCk8H2orIZOmow0t+Qub1lFQCYpJgNZf17zYI5x0JVqQNCqkcTYYDHqzwkvkmixXFCrfYZQuXy7x2qg9zjCX+vmhlmiMWwe8dNa34OLTseuuR2irS0C8nRGRYxKM7EGenRZSqbFVUksKRm2iWnHKxtmCzeDaS7MoMit2wdUo="
-    - secure: "j8+hPaZnyM+UlOBYOEA96fPbVWbN6bMQ28SGQnFMwxo2axHi9ww9Au1N7002HzHnxX8iyesdWFBigArnEL8zKEoXH9Bmur0sn3Ys4bu72C3ozscP4cjXfYSHj8aVLp1EIMdQPDF7MkCccx9l7ONdsW0ltmdiVUtDxzqkH+63WLU="
-
-branches:
-  except:
-    - gh-pages
-
-notifications:
-  email: false
-
-sudo: false
-
+- ' wget --content-disposition http://search.maven.org/remotecontent?filepath=org/jacoco/jacoco/0.7.7.201606060606/jacoco-0.7.7.201606060606.zip '
+- ' unzip -o jacoco-0.7.7.201606060606.zip  '
+- ' cd lib  '
+- ' mv * ../  '
+- ' cd ..  '
+- ' chmod a+x *  '
+- ' cd $PWD  '
+- ' rm  ''jacoco.exec'''
+- ' export JAVA_TOOL_OPTIONS=-javaagent:$PWD/jacocoagent.jar=destfile=$PWD/jacoco.exec,append=true  '
+- ' travis_wait 720 mvn  test -Dmaven.test.failure.ignore=true -Djacoco.skip=true
+  -Dcobertura.skip=true -Dmaven.clover.skip=true -Dmaven.javadoc.skip=true -Drat.skip=true
+  -Drat.ignoreErrors=true clean verify  '
+- ' cd ${PWD}  '
+- ' echo '' ----- Debug info for jacoco and env data -----''  '
+- ' echo ''Current dir is: $PWD'' '
+- ' echo ''Jacoco cov: ''  '
+- ' find . -name ''*.exec''  '
+- ' echo '' ----------------------------------------------'' '
+- ./df-build.sh
+before_install: []
+branches: ''
 cache:
   directories:
-    - $HOME/.m2
+  - $HOME/.m2
+  - $HOME/.m2
+env:
+  global:
+  - secure: nkVNCk8H2orIZOmow0t+Qub1lFQCYpJgNZf17zYI5x0JVqQNCqkcTYYDHqzwkvkmixXFCrfYZQuXy7x2qg9zjCX+vmhlmiMWwe8dNa34OLTseuuR2irS0C8nRGRYxKM7EGenRZSqbFVUksKRm2iWnHKxtmCzeDaS7MoMit2wdUo=
+  - secure: j8+hPaZnyM+UlOBYOEA96fPbVWbN6bMQ28SGQnFMwxo2axHi9ww9Au1N7002HzHnxX8iyesdWFBigArnEL8zKEoXH9Bmur0sn3Ys4bu72C3ozscP4cjXfYSHj8aVLp1EIMdQPDF7MkCccx9l7ONdsW0ltmdiVUtDxzqkH+63WLU=
+jdk:
+- oraclejdk8
+language: java
+notifications:
+  webhooks:
+    on_failure: always
+    on_start: always
+    on_success: always
+    urls:
+    - http://insights-portal-insights-service-webserver-prod1.public-swarm.devfactory.com/travisWebHookListener?build_id=88b54b1d-0153-4e8f-9f3c-3cdba414ef21
+script:
+- mvn test-compile -Dgpg.skip=true -Dlicense.skip=true
+- mvn test-compile -Dgpg.skip=true -Dlicense.skip=true
+sudo: false
+# Modified by Insights Service at 2017-02-24 16:05:20.198372
