@@ -23,12 +23,12 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeParameterElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
@@ -100,7 +100,7 @@ public final class MethodSpec {
     boolean firstParameter = true;
     for (Iterator<ParameterSpec> i = parameters.iterator(); i.hasNext(); ) {
       ParameterSpec parameter = i.next();
-      if (!firstParameter) codeWriter.emit(", ");
+      if (!firstParameter) codeWriter.emit(",").emitWrappingSpace();
       parameter.emit(codeWriter, !i.hasNext() && varargs);
       firstParameter = false;
     }
@@ -113,11 +113,11 @@ public final class MethodSpec {
     }
 
     if (!exceptions.isEmpty()) {
-      codeWriter.emit(" throws");
+      codeWriter.emitWrappingSpace().emit("throws");
       boolean firstException = true;
       for (TypeName exception : exceptions) {
         if (!firstException) codeWriter.emit(",");
-        codeWriter.emit(" $T", exception);
+        codeWriter.emitWrappingSpace().emit("$T", exception);
         firstException = false;
       }
     }
@@ -212,16 +212,7 @@ public final class MethodSpec {
     }
 
     methodBuilder.returns(TypeName.get(method.getReturnType()));
-
-    List<? extends VariableElement> parameters = method.getParameters();
-    for (VariableElement parameter : parameters) {
-      TypeName type = TypeName.get(parameter.asType());
-      String name = parameter.getSimpleName().toString();
-      Set<Modifier> parameterModifiers = parameter.getModifiers();
-      ParameterSpec.Builder parameterBuilder = ParameterSpec.builder(type, name)
-          .addModifiers(parameterModifiers.toArray(new Modifier[parameterModifiers.size()]));
-      methodBuilder.addParameter(parameterBuilder.build());
-    }
+    methodBuilder.addParameters(ParameterSpec.parametersOf(method));
     methodBuilder.varargs(method.isVarArgs());
 
     for (TypeMirror thrownType : method.getThrownTypes()) {
@@ -413,6 +404,11 @@ public final class MethodSpec {
 
     public Builder addCode(String format, Object... args) {
       code.add(format, args);
+      return this;
+    }
+
+    public Builder addNamedCode(String format, Map<String, ?> args) {
+      code.addNamed(format, args);
       return this;
     }
 
